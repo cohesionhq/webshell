@@ -54,14 +54,10 @@ libadwaita 1.6 or later and WebKitGTK 6.0 (on Fedora,
 cargo build --release
 ```
 
-To install it for one user:
-
-```sh
-install -Dm755 target/release/cohesion-gtk ~/.local/bin/cohesion-gtk
-install -Dm644 data/com.hellocohesion.Cohesion.desktop ~/.local/share/applications/com.hellocohesion.Cohesion.desktop
-install -Dm644 data/com.hellocohesion.Cohesion.svg ~/.local/share/icons/hicolor/scalable/apps/com.hellocohesion.Cohesion.svg
-install -Dm644 data/com.hellocohesion.Cohesion.metainfo.xml ~/.local/share/metainfo/com.hellocohesion.Cohesion.metainfo.xml
-```
+To install it for one user, so it shows in the desktop's launcher, run
+`gtk/install.sh`. It builds a release, installs the binary, desktop entry,
+icon and AppStream metainfo under `~/.local` (or `PREFIX`), and refreshes the
+launcher's caches. `gtk/install.sh --uninstall` removes them again.
 
 On some NVIDIA drivers WebKitGTK draws a blank window; starting it with
 `WEBKIT_DISABLE_DMABUF_RENDERER=1` works around that.

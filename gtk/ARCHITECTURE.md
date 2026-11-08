@@ -79,4 +79,4 @@ the page uses) and `--titlebar-inset` are a contract with `web/` and
 - Trust and the pairing file: `src/pairing.rs`, `src/pairing/tls.rs`
 - Bundle fetching and the cache: `src/assets.rs`
 - The URI scheme: `src/serving.rs`; the bridge: `src/bridge.rs`, `src/bridge.js`
-- The desktop file, AppStream metainfo and icon: `data/`
+- The desktop file, AppStream metainfo and icon: `data/`; installing them: `install.sh`
