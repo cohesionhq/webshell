@@ -1,6 +1,6 @@
 ---
 name: verify-change
-description: Build and check a change to the Apple Cohesion client (this repo) or to CohesionWebKit before calling it done. Use after any edit to Swift code, the Xcode project, Info.plist, assets or CohesionWebKit, and before committing or reporting.
+description: Build and check a change to the Apple Cohesion client, the Linux client (gtk/) or CohesionWebKit before calling it done. Use after any edit to Swift or Rust code, the Xcode project, Info.plist, assets or CohesionWebKit, and before committing or reporting.
 ---
 
 # Verify a change
@@ -39,6 +39,20 @@ If you changed CohesionWebKit (`../CohesionWebKit`), also run:
 
 and still run both app builds, because the app is what uses the package's
 public API.
+
+## The Linux app
+
+A change under `gtk/` is checked from `gtk/`:
+
+```sh
+cargo fmt --check && cargo clippy -- -D warnings && cargo build
+```
+
+All three must pass. It builds against `../../cohesion/cohesion-core`, so a
+failure there after pulling cohesion is the protocol moving: fix it here.
+`desktop-file-validate` and `appstreamcli validate --no-net` check the files in
+`gtk/data/` when they change. A change to the Swift side alone doesn't need
+these, nor the reverse.
 
 ## Failures that aren't yours
 

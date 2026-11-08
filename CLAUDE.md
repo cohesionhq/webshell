@@ -1,19 +1,28 @@
 # CLAUDE.md
 
 The webshell clients: thin apps that pair with `cohesiond` and show its web
-UI. Today there is one, `mac/`, the Apple Cohesion client (the app named
-Cohesion on iPad and Mac), which shows the web UI through
-[CohesionWebKit](https://github.com/cohesionhq/CohesionWebKit).
-Almost everything it shows is the web UI from
-[cohesionhq/cohesion](https://github.com/cohesionhq/cohesion), and almost
-everything it does is in CohesionWebKit, so a change usually belongs in one of
-those, not here. `mac/ARCHITECTURE.md` gives the one-page map.
+UI. There are two:
+
+- `mac/`, the Apple Cohesion client (the app named Cohesion on iPad and Mac),
+  which shows the web UI through
+  [CohesionWebKit](https://github.com/cohesionhq/CohesionWebKit). Almost
+  everything it does is in CohesionWebKit. `mac/ARCHITECTURE.md` gives the
+  one-page map.
+- `gtk/`, the Linux client, in Rust with GTK 4, libadwaita and WebKitGTK. It
+  holds its own copy of what CohesionWebKit does, and takes setup codes,
+  certificates and the protocol's types from `cohesion-core`.
+  `gtk/ARCHITECTURE.md` gives the one-page map.
+
+Almost everything either shows is the web UI from
+[cohesionhq/cohesion](https://github.com/cohesionhq/cohesion), so a change
+usually belongs there, not here.
 
 ## Layout
 
-Each client is a top-level directory; new ones are siblings of `mac/`.
-CohesionWebKit is a local package beside this repo (`../CohesionWebKit` from
-the repo root, `../../CohesionWebKit` in the Xcode project), so clone it
+Each client is a top-level directory; new ones are siblings of `mac/` and
+`gtk/`. CohesionWebKit is a local package beside this repo (`../CohesionWebKit`
+from the repo root, `../../CohesionWebKit` in the Xcode project), and so is
+cohesionhq/cohesion for `gtk/` (`../../cohesion/cohesion-core`), so clone them
 there (see `README.md`). Run the commands below from the repo root.
 
 ## Design principles
@@ -21,6 +30,9 @@ there (see `README.md`). Run the commands below from the repo root.
 - **Keep the shell thin.** Pairing, serving and the socket bridge live in
   CohesionWebKit, shared with Cohesion Serve. UI lives in the web UI. Add code
   here only for what is a platform's own, such as the scene and the safe area.
+  `gtk/` is the exception, as Swift can't be shared with Linux: it does what
+  CohesionWebKit does, the same way, and a change to one is made to the other
+  (`gtk/src/bridge.js` is CohesionWebKit's bridge script, unchanged).
 - **No speculative generality.** Build what the task needs.
 
 ## Decide, then report
@@ -58,8 +70,9 @@ by eye or by hand.
 
 ## The page's side is a stable API
 
-CohesionWebKit sets `--titlebar-inset` on `<html>` to the top safe area after
-each load, and the page relies on the session API CohesionWebKit provides.
+CohesionWebKit, and `gtk/` on Linux, set `--titlebar-inset` on `<html>` to
+the top safe area after each load, and the page relies on the session API they
+provide.
 Change them together with `cohesion open` and `web/` in cohesionhq/cohesion,
 or not at all ("The page's side is a stable API" in its
 `docs/serving-the-webui.md`).
@@ -71,4 +84,10 @@ xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination '
 xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination 'platform=macOS' build
 ```
 
-There are no tests. Both builds passing is the check (see `verify-change`).
+For the Linux app, from `gtk/`:
+
+```sh
+cargo fmt --check && cargo clippy -- -D warnings && cargo build
+```
+
+There are no tests. The builds passing is the check (see `verify-change`).

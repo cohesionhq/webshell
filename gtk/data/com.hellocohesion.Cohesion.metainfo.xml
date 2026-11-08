@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.hellocohesion.Cohesion</id>
+  <name>Cohesion</name>
+  <summary>Your Cohesion server on the desktop</summary>
+  <developer id="com.hellocohesion">
+    <name>Jackson Zamorano</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-only</project_license>
+  <description>
+    <p>
+      Cohesion pairs with your Cohesion server using a setup code and shows its workspaces,
+      agents and actors in a window of their own.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.hellocohesion.Cohesion.desktop</launchable>
+  <url type="vcs-browser">https://github.com/cohesionhq/webshell</url>
+  <content_rating type="oars-1.1"/>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <releases>
+    <release version="0.1.0" date="2026-11-08"/>
+  </releases>
+</component>

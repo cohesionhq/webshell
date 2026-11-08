@@ -1,0 +1,5 @@
+/* The page runs up under the header bar, which keeps only its buttons. */
+headerbar.overlay {
+  background: none;
+  box-shadow: none;
+}

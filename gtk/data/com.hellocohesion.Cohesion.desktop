@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Cohesion
+Comment=Your Cohesion server’s workspaces, agents and actors
+Exec=cohesion-gtk
+Icon=com.hellocohesion.Cohesion
+Terminal=false
+Categories=Office;ProjectManagement;
+StartupNotify=true

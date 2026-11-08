@@ -5,7 +5,9 @@ description: How to make a feature or fix in the Apple Cohesion client: deciding
 
 # Change the app
 
-Read `mac/ARCHITECTURE.md` first if you haven't. It's one page.
+Read `mac/ARCHITECTURE.md` first if you haven't. It's one page. For the Linux
+app, read `gtk/ARCHITECTURE.md` instead: everything it does is in `gtk/`, and
+the table below maps CohesionWebKit's parts to its files.
 
 ## Where the change belongs
 
@@ -14,6 +16,11 @@ Read `mac/ARCHITECTURE.md` first if you haven't. It's one page.
 | Anything inside the page: screens, layout, the web UI's copy | `../cohesion/web/` (cohesionhq/cohesion) |
 | Pairing, the bundle, serving, the socket bridge, `CohesionWebUI`/`WebUIView`/`PairingForm` | `../CohesionWebKit` (shared with Cohesion Serve) |
 | The scene, window style, menus/commands, native overlays, Info.plist, entitlements, the icon | here, `mac/Cohesion/` |
+| Any of the above on Linux | here, `gtk/src/` (pairing, bundle, scheme and bridge included) |
+
+A change to pairing, serving or the bridge in CohesionWebKit is made in
+`gtk/` too, the same way, and the reverse; say in the report if one side is
+left for later.
 
 If it's in CohesionWebKit, make the change there. Follow that repo's
 `CLAUDE.md`, commit only your files there, and build this app too (see
