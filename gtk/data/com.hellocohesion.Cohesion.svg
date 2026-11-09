@@ -1,18 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#5A5CCF"/>
-      <stop offset="1" stop-color="#2E2F8E"/>
-    </linearGradient>
-    <clipPath id="tile"><rect width="1024" height="1024" rx="230" ry="230"/></clipPath>
-  </defs>
-  <rect x="96" y="120" width="832" height="832" rx="187" ry="187" fill="#1E1F66"/>
-  <g transform="translate(96 96) scale(0.8125)">
-    <g clip-path="url(#tile)">
-      <rect width="1024" height="1024" fill="url(#bg)"/>
-      <path d="M -5.1 110.0 L 440.6 110.0 A 473.4 473.4 0 0 1 914.0 583.5 L 914.0 1029.0 A 194.9 194.9 0 0 1 719.0 1224.0 L -5.1 1224.0 A 194.9 194.9 0 0 1 -200.0 1029.0 L -200.0 304.9 A 194.9 194.9 0 0 1 -5.1 110.0 Z" fill="#7072FF"/>
-      <path d="M -55.8 400.0 L 273.8 400.0 A 350.2 350.2 0 0 1 624.0 750.2 L 624.0 1079.8 A 144.2 144.2 0 0 1 479.8 1224.0 L -55.8 1224.0 A 144.2 144.2 0 0 1 -200.0 1079.8 L -200.0 544.2 A 144.2 144.2 0 0 1 -55.8 400.0 Z" fill="#B3B5FF"/>
-      <path d="M -106.6 690.0 L 107.1 690.0 A 226.9 226.9 0 0 1 334.0 917.0 L 334.0 1130.5 A 93.4 93.4 0 0 1 240.6 1224.0 L -106.6 1224.0 A 93.4 93.4 0 0 1 -200.0 1130.5 L -200.0 783.5 A 93.4 93.4 0 0 1 -106.6 690.0 Z" fill="#EEEEFE"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Cohesion</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#5A5CCF" offset="0%"></stop>
+            <stop stop-color="#2E2F8E" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="App-Icon-—-Linux" stroke="none" fill="none" fill-rule="evenodd">
+        <rect id="Bottom-Edge" fill="#1E1F66" x="96" y="120" width="832" height="832" rx="187"></rect>
+        <g id="Tile" stroke-width="1" transform="translate(96, 96)">
+            <rect id="Background" fill="url(#linearGradient-2)" x="0" y="0" width="832" height="832" rx="187"></rect>
+            <path d="M269.625,89.375 C530.855687,89.375 742.625,301.144313 742.625,562.375 L742.625,799.5 C742.625,801.19322 742.603419,802.8814 742.560518,804.56428 C714.154757,821.968675 680.748849,832 645,832 L187,832 C83.7227518,832 0,748.277248 0,645 L0,187 C0,151.250731 10.0315606,117.844459 27.4332965,89.442569 C29.117931,89.3965894 30.8064443,89.375 32.5,89.375 L269.625,89.375 Z" id="Layer-1-·-Brand" fill="#7072FF"></path>
+            <path d="M157,325 C350.299662,325 507,481.700338 507,675 L507,832 L187,832 C83.7227518,832 0,748.277248 0,645 L0,325 L157,325 Z" id="Layer-2" fill="#B3B5FF"></path>
+            <path d="M44.375,560.625 C169.743638,560.625 271.375,662.256362 271.375,787.625 L271.375,832 L187,832 C83.7227518,832 0,748.277248 0,645 L0,560.625 L44.375,560.625 Z" id="Layer-3-·-Core" fill="#EEEEFE"></path>
+        </g>
     </g>
-  </g>
 </svg>
