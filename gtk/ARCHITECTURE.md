@@ -11,11 +11,12 @@ the same stable API, in Rust. The system as a whole is described in
 | Piece | Where | Owns |
 | --- | --- | --- |
 | This app | `gtk/` | pairing, connections, fetching and serving the bundle, the socket bridge, the windows, menus and preferences |
-| cohesion-core | `../../cohesion/cohesion-core` (path dependency) | setup codes, the self-signed certificate, `key_fingerprint`, the protocol's types |
+| cohesion-rs | `../../cohesion/cohesion-rs` (path dependency, MIT) | setup codes, the self-signed certificate, `key_fingerprint`, the protocol's envelope |
 | The web UI | `web/` in cohesion | everything inside the page |
 
-The wire's types come from the daemon's own crate, so a change to `Hello`,
-`WebBundle` or the reply frame fails this build rather than the app.
+The wire's types come from cohesion's client crate, which the daemon's tests
+check against its own frames, so a change to `Hello`, `WebBundle` or the reply
+frame fails a build rather than the app.
 
 ## Flow
 

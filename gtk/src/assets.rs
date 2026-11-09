@@ -3,7 +3,7 @@
 
 use std::{collections::HashMap, fs, io::Read, path::PathBuf};
 
-use cohesion_core::protocol::{
+use cohesion_rs::protocol::{
     Frame, Outcome, ReplyData, Request, ServerMessage, WebBundle, WebBundleRequest,
 };
 use futures_util::SinkExt;

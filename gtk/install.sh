@@ -33,7 +33,7 @@ elif [[ $# -gt 0 ]]; then
     exit 2
 fi
 
-if [[ ! -d "$HERE/../../cohesion/cohesion-core" ]]; then
+if [[ ! -d "$HERE/../../cohesion/cohesion-rs" ]]; then
     echo "cohesionhq/cohesion must be cloned beside webshell (see README.md)." >&2
     exit 1
 fi

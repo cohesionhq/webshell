@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use cohesion_core::key_fingerprint;
+use cohesion_rs::key_fingerprint;
 use rustls::{
     CertificateError, ClientConfig, DigitallySignedStruct, Error, SignatureScheme,
     client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier},

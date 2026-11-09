@@ -7,7 +7,7 @@
     <name>Jackson Zamorano</name>
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>AGPL-3.0-only</project_license>
+  <project_license>Apache-2.0</project_license>
   <description>
     <p>
       Cohesion pairs with your Cohesion server using a setup code and shows its workspaces,

@@ -48,7 +48,7 @@ A change under `gtk/` is checked from `gtk/`:
 cargo fmt --check && cargo clippy -- -D warnings && cargo build
 ```
 
-All three must pass. It builds against `../../cohesion/cohesion-core`, so a
+All three must pass. It builds against `../../cohesion/cohesion-rs`, so a
 failure there after pulling cohesion is the protocol moving: fix it here.
 `desktop-file-validate` and `appstreamcli validate --no-net` check the files in
 `gtk/data/` when they change. A change to the Swift side alone doesn't need

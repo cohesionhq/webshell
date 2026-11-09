@@ -10,8 +10,10 @@ UI. There are two:
   one-page map.
 - `gtk/`, the Linux client, in Rust with GTK 4, libadwaita and WebKitGTK. It
   holds its own copy of what CohesionWebKit does, and takes setup codes,
-  certificates and the protocol's types from `cohesion-core`.
+  certificates and the protocol's envelope from `cohesion-rs`.
   `gtk/ARCHITECTURE.md` gives the one-page map.
+
+The whole client is Apache-2.0; the daemon is AGPL-3.0-only.
 
 Almost everything either shows is the web UI from
 [cohesionhq/cohesion](https://github.com/cohesionhq/cohesion), so a change
@@ -22,7 +24,7 @@ usually belongs there, not here.
 Each client is a top-level directory; new ones are siblings of `mac/` and
 `gtk/`. CohesionWebKit is a local package beside this repo (`../CohesionWebKit`
 from the repo root, `../../CohesionWebKit` in the Xcode project), and so is
-cohesionhq/cohesion for `gtk/` (`../../cohesion/cohesion-core`), so clone them
+cohesionhq/cohesion for `gtk/` (`../../cohesion/cohesion-rs`), so clone them
 there (see `README.md`). Run the commands below from the repo root.
 
 ## Design principles

@@ -11,7 +11,7 @@
 
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use cohesion_core::protocol::{Frame, ServerMessage};
+use cohesion_rs::protocol::{Frame, ServerMessage};
 use gtk::{gio, glib};
 use serde::Deserialize;
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};

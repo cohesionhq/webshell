@@ -5,7 +5,7 @@ mod tls;
 
 use std::{fs, io::ErrorKind, path::PathBuf};
 
-use cohesion_core::{
+use cohesion_rs::{
     Authentication, Host, SetupCode,
     private_files::{create_private_dir, write_private},
     protocol::{Frame, Outcome, RegisterRequest, ServerMessage},
