@@ -6,7 +6,7 @@ mod tls;
 use std::{fs, io::ErrorKind, path::PathBuf};
 
 use cohesion_rs::{
-    Authentication, Host, SetupCode,
+    Authentication, Host, SetupCode, generated_client_name,
     private_files::{create_private_dir, write_private},
     protocol::{Frame, Outcome, RegisterRequest, ServerMessage},
 };
@@ -170,7 +170,11 @@ impl PairingStore {
     }
 }
 
-/// The name pairing suggests: this computer's hostname.
-pub fn device_name() -> String {
-    gtk::glib::host_name().to_string()
+/// What this app calls itself in a generated client name.
+const CLIENT_NAME: &str = "Cohesion";
+
+/// The name pairing suggests, such as `apollo (Cohesion)`: this computer's
+/// hostname, then this app. Whatever is typed over it is registered as typed.
+pub fn suggested_name() -> String {
+    generated_client_name(&gtk::glib::host_name(), CLIENT_NAME)
 }

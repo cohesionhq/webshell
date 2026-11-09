@@ -1,6 +1,7 @@
 //! Stands in for the web UI while there is no server to show it for:
 //! registers this app with a server using the setup code it printed, under
-//! a name that starts as the computer's.
+//! a name that starts as the computer's and this app's, such as
+//! `apollo (Cohesion)`.
 
 use std::rc::Rc;
 
@@ -16,7 +17,7 @@ use crate::{
 pub fn new(shell: &Rc<Shell>) -> gtk::Widget {
     let name = adw::EntryRow::builder()
         .title("Name")
-        .text(pairing::device_name())
+        .text(pairing::suggested_name())
         .build();
     let code = adw::EntryRow::builder().title("Setup code").build();
     let rows = gtk::ListBox::builder()
