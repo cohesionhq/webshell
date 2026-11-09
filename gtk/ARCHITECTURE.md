@@ -23,6 +23,9 @@ frame fails a build rather than the app.
 `main.rs` starts an `adw::Application` (`com.hellocohesion.Cohesion`) and a
 tokio runtime for networking. GTK keeps the main thread: networking runs on
 `RUNTIME`, and the main thread awaits it with `glib::spawn_future_local`.
+It prefers GTK's GL renderer (`GSK_RENDERER=ngl`, unless the environment
+sets one): GTK's Vulkan renderer can't import the web view's frames on
+NVIDIA's driver, and copies each one back through GL on the main thread.
 
 1. **Pair** (`pairing.rs`, `pairing_page.rs`). With no pairing, or once the
    server stops trusting the app, a window shows the pairing page. The setup

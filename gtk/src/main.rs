@@ -46,6 +46,15 @@ pub fn data_dir() -> PathBuf {
 }
 
 fn main() -> glib::ExitCode {
+    // GTK's GL renderer takes the web view's frames as they are. Its Vulkan
+    // renderer, the default, can't import them on some drivers (NVIDIA's,
+    // for one) and copies each one back through GL instead, on the main
+    // thread: a hover then takes hundreds of milliseconds, and an animation
+    // keeps more than two cores busy. A renderer set in the environment wins.
+    if std::env::var_os("GSK_RENDERER").is_none() {
+        // SAFETY: nothing else runs yet; the networking runtime starts later.
+        unsafe { std::env::set_var("GSK_RENDERER", "ngl") };
+    }
     let app = adw::Application::builder().application_id(APP_ID).build();
     app.connect_startup(|app| {
         glib::set_application_name("Cohesion");
