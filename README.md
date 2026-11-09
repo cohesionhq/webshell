@@ -64,5 +64,10 @@ On some NVIDIA drivers WebKitGTK draws a blank window; starting it with
 
 ## Licence
 
-Copyright © Jackson Zamorano. Licensed under the GNU Affero General Public
-License, version 3 only (AGPL-3.0-only). See `LICENSE`.
+Copyright © Jackson Zamorano. The Mac shell (`mac/`) and the rest of the
+repository are licensed under the Apache License, version 2.0 (Apache-2.0),
+so the app can ship through the App Store; see `LICENSE`. The Linux client
+(`gtk/`) is licensed under the GNU Affero General Public License, version 3
+only (AGPL-3.0-only), because it links the AGPL core crate `cohesion-core`;
+see `gtk/LICENSE`. The licensing of the daemon and the core is explained in
+`docs/licensing.md` in [cohesionhq/cohesion](https://github.com/cohesionhq/cohesion).
