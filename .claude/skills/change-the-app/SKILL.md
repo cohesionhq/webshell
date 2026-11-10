@@ -1,30 +1,28 @@
 ---
 name: change-the-app
-description: How to make a feature or fix in the Apple Cohesion client: deciding whether it belongs in this repo, CohesionWebKit or the web UI, and the project's gotchas (synchronized folders, build-setting entitlements, both platforms, copy rules, the stable page API). Use before writing code for any task in this repo.
+description: How to make a feature or fix in the Apple Cohesion client: deciding whether it belongs in this repo or the web UI, and the project's gotchas (synchronized folders, build-setting entitlements, both platforms, copy rules, the stable page API). Use before writing code for any task in this repo.
 ---
 
 # Change the app
 
 Read `mac/ARCHITECTURE.md` first if you haven't. It's one page. For the Linux
 app, read `gtk/ARCHITECTURE.md` instead: everything it does is in `gtk/`, and
-the table below maps CohesionWebKit's parts to its files.
+the table below maps `mac/`'s parts to its files.
 
 ## Where the change belongs
 
 | The change is about… | It goes in |
 | --- | --- |
 | Anything inside the page: screens, layout, the web UI's copy | `../cohesion/web/` (cohesionhq/cohesion) |
-| Pairing, the bundle, serving, the socket bridge, `CohesionWebUI`/`WebUIView`/`PairingForm` | `../CohesionWebKit` (shared with Cohesion Serve) |
-| The scene, window style, menus/commands, native overlays, Info.plist, entitlements, the icon | here, `mac/Cohesion/` |
+| Pairing, the bundle, serving, the socket bridge, `CohesionWebUI`/`WebUIView`/`PairingForm` | here, `mac/Cohesion/` (`Pairing/`, `Connection/`, `Serving/`, `Views/`) |
+| The scene, window style, menus/commands, native overlays, Info.plist, entitlements, the icon | here, `mac/Cohesion/CohesionApp.swift` and the project |
 | Any of the above on Linux | here, `gtk/src/` (pairing, bundle, scheme and bridge included) |
 
-A change to pairing, serving or the bridge in CohesionWebKit is made in
-`gtk/` too, the same way, and the reverse; say in the report if one side is
-left for later.
+A change to pairing, serving or the bridge in `mac/` is made in `gtk/` too,
+the same way, and the reverse; say in the report if one side is left for
+later.
 
-If it's in CohesionWebKit, make the change there. Follow that repo's
-`CLAUDE.md`, commit only your files there, and build this app too (see
-`verify-change`). If it's the web UI, it's a different repo with its own
+If it's the web UI, it's a different repo with its own
 checks. Do it there only if the task covers it, and otherwise report that it
 belongs there.
 
@@ -46,11 +44,10 @@ belongs there.
   The maintainer does that for releases.
 - **New capabilities, targets or dependencies:** take the conservative default
   (don't add them). If the task can't be done without one, stop and report.
-- **The page's side is a stable API.** `--titlebar-inset` (set by CohesionWebKit's
-  `WebUIView`) and the session API (`#token=`, `/client`, `/connect`, the
+- **The page's side is a stable API.** `--titlebar-inset` (set by `WebUIView`) and the session API (`#token=`, `/client`, `/connect`, the
   `WebSocket` subset) change only together with `cohesion open` and `web/`.
   See `docs/serving-the-webui.md` in cohesion.
-- **Swift style:** SwiftUI, `@State` owning `@Observable` CohesionWebKit types,
+- **Swift style:** SwiftUI, `@State` owning `@Observable` types,
   small `private` views and `ViewModifier`s in the same file until a file gets
   long, and `///` doc comments on types saying what they show. Match the
   surrounding comment density.

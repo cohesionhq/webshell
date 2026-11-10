@@ -7,27 +7,18 @@ web UI.
 
 | Directory | Client |
 | --- | --- |
-| `mac/` | The native Apple app, named Cohesion on iPad and Mac. It shows the web UI through [CohesionWebKit](https://github.com/cohesionhq/CohesionWebKit). See `mac/ARCHITECTURE.md`. |
+| `mac/` | The native Apple app, named Cohesion on iPad and Mac. See `mac/ARCHITECTURE.md`. |
 | `gtk/` | The Linux app, in GTK 4 and libadwaita, showing the web UI in WebKitGTK. See `gtk/ARCHITECTURE.md`. |
 
 Future clients will be siblings of these.
 
 ## Building the Apple app
 
-The Xcode project uses CohesionWebKit as a local package, so clone it beside
-this repo:
-
-```
-Developer/
-  webshell/
-  CohesionWebKit/
-```
-
-Then open `mac/cohesion-apple.xcodeproj`, or build from the repo root:
+Open `mac/CohesionWebHarness.xcodeproj`, or build from the repo root:
 
 ```sh
-xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination 'generic/platform=iOS Simulator' build
-xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination 'platform=macOS' build
+xcodebuild -project mac/CohesionWebHarness.xcodeproj -scheme Cohesion -destination 'generic/platform=iOS Simulator' build
+xcodebuild -project mac/CohesionWebHarness.xcodeproj -scheme Cohesion -destination 'platform=macOS' build
 ```
 
 The project sets no development team, so the Mac build signs to run locally.

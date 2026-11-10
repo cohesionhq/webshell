@@ -11,7 +11,7 @@ The bundle ID is `com.hellocohesion.apple.client`. Build first (see
 ## iPad simulator
 
 ```sh
-APP="$(xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination 'generic/platform=iOS Simulator' -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2}')/Cohesion.app"
+APP="$(xcodebuild -project mac/CohesionWebHarness.xcodeproj -scheme Cohesion -destination 'generic/platform=iOS Simulator' -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2}')/Cohesion.app"
 xcrun simctl list devices booted            # boot one if none: xcrun simctl boot "iPad Pro 11-inch (M5)"
 xcrun simctl install booted "$APP"
 xcrun simctl launch booted com.hellocohesion.apple.client
@@ -25,7 +25,7 @@ paired simulator stays paired.
 ## Mac
 
 ```sh
-APP="$(xcodebuild -project mac/cohesion-apple.xcodeproj -scheme Cohesion -destination 'platform=macOS' -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2}')/Cohesion.app"
+APP="$(xcodebuild -project mac/CohesionWebHarness.xcodeproj -scheme Cohesion -destination 'platform=macOS' -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2}')/Cohesion.app"
 open "$APP"
 ```
 

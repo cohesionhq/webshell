@@ -2,7 +2,7 @@
 
 The Linux Cohesion client is a thin GTK 4 and libadwaita shell around the
 Cohesion web UI, shown in a WebKitGTK 6.0 web view. It is the Linux copy of
-`mac/` and CohesionWebKit together: the same flow, the same bridge script and
+`mac/`: the same flow, the same bridge script and
 the same stable API, in Rust. The system as a whole is described in
 `docs/architecture.md` in [cohesionhq/cohesion](https://github.com/cohesionhq/cohesion).
 
@@ -48,7 +48,7 @@ NVIDIA's driver, and copies each one back through GL on the main thread.
    that page's token alone. The token is fresh on each load (`#token=`).
    Every window's web view shares one `NetworkSession` (under
    `$XDG_DATA_HOME/cohesion-gtk/web`), and so the pages' storage.
-5. **Bridge** (`bridge.rs`, `bridge.js`). `bridge.js` is CohesionWebKit's
+5. **Bridge** (`bridge.rs`, `bridge.js`). `bridge.js` is `mac/`'s
    `SocketBridge` script unchanged: it replaces the page's `WebSocket` for
    `/connect` with a stand-in that posts to the `cohesionSocket` script
    message handler. The bridge opens a session for each socket and relays
@@ -78,7 +78,7 @@ the main menu and as a toast once a newer build is served; and Preferences
 The session API (`#token=`, `/client`, `/connect`, the subset of `WebSocket`
 the page uses) and `--titlebar-inset` are a contract with `web/` and
 `cohesion open`. They change in all three places or not at all, and
-`bridge.js` changes with CohesionWebKit's copy.
+`bridge.js` changes with `mac/`'s copy.
 
 ## Where to look
 

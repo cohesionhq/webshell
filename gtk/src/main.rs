@@ -2,7 +2,7 @@
 //! with a cohesiond natively, fetches the web UI's bundle from it, serves
 //! the bundle to a WebKitGTK web view at `cohesion://app/` and stands in
 //! for the page's session API (`#token=`, `/client`, `/connect`), as
-//! CohesionWebKit does for the Mac and iPad.
+//! `mac/` does for the Mac and iPad.
 
 mod assets;
 mod bridge;

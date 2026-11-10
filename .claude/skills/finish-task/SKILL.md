@@ -18,7 +18,7 @@ side, `docs/serving-the-webui.md` in cohesion.
 
 ## 3. Commit only your own work
 
-The checkout is often dirty with the maintainer's work, here and in `../CohesionWebKit`.
+The checkout is often dirty with the maintainer's work, here.
 Run `git status` before you start and again now.
 
 - Never revert, stash, reset, checkout or commit changes you didn't make.
@@ -46,7 +46,7 @@ why isn't obvious. Make one commit per coherent change.
 git push origin master
 ```
 
-If you committed in CohesionWebKit too, push it the same way. If the push is
+If the push is
 rejected because the remote moved, `git pull --rebase origin master` and push
 again. Never force-push. Don't archive, upload to TestFlight or otherwise deploy
 unless told.

@@ -6,10 +6,6 @@
 	objectVersion = 90;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		38ACCBBEF0604D4CA5EBFFC8 /* CohesionWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = C048FCA3DFD74F9FA642E5F3 /* CohesionWebKit */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Cohesion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cohesion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -39,7 +35,6 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				38ACCBBEF0604D4CA5EBFFC8 /* CohesionWebKit in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -78,9 +73,6 @@
 				000000000000000000000010 /* Cohesion */,
 			);
 			name = Cohesion;
-			packageProductDependencies = (
-				C048FCA3DFD74F9FA642E5F3 /* CohesionWebKit */,
-			);
 			productName = Cohesion;
 			productReference = 000000000000000000000120 /* Cohesion.app */;
 			productType = "com.apple.product-type.application";
@@ -109,9 +101,6 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				D98C4D00857345D09D8B33D0 /* XCLocalSwiftPackageReference "../../CohesionWebKit" */,
-			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
@@ -414,20 +403,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		D98C4D00857345D09D8B33D0 /* XCLocalSwiftPackageReference "../../CohesionWebKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../CohesionWebKit;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		C048FCA3DFD74F9FA642E5F3 /* CohesionWebKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D98C4D00857345D09D8B33D0 /* XCLocalSwiftPackageReference "../../CohesionWebKit" */;
-			productName = CohesionWebKit;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }
