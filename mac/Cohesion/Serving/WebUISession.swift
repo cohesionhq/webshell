@@ -9,6 +9,8 @@ import UIKit
 /// One loaded web UI: the page showing it, served from `assets` by a scheme
 /// handler, and talking to the daemon at `route` through a `SocketBridge`.
 /// Its notifications are the system's, through a `NotificationBridge`.
+/// `onUpdate` runs when a session the page opens finds the server serving
+/// a newer build than `assets`.
 /// The page reads the token it presents from the URL it is first opened
 /// at, so it is opened with a fresh one each session.
 final class WebUISession {
@@ -17,9 +19,9 @@ final class WebUISession {
     /// `cohesion://app/#token=<token>`.
     let url: URL
 
-    init(route: DaemonRoute, assets: WebAssets) {
+    init(route: DaemonRoute, assets: WebAssets, onUpdate: @escaping () -> Void) {
         let token = Self.freshToken()
-        let bridge = SocketBridge(route: route, token: token)
+        let bridge = SocketBridge(route: route, token: token, hash: assets.hash, onUpdate: onUpdate)
         let notifications = NotificationBridge()
         var configuration = WebPage.Configuration()
         configuration.urlSchemeHandlers[URLScheme(WebUISchemeHandler.scheme)!] = WebUISchemeHandler(
