@@ -61,7 +61,12 @@ NVIDIA's driver, and copies each one back through GL on the main thread.
 
 Links to other origins, and `window.open`, go to the default browser
 (`gtk::UriLauncher`). WebKitGTK answers `<input type="file">` with the
-desktop's file chooser itself.
+desktop's file chooser itself. WebKitGTK hands the page the mouse's back
+and forward buttons (GDK's 8 and 9) as a left button, so a capture-phase
+`EventControllerLegacy` on the window (`history_buttons` in `window.rs`) reads
+them from the raw event before WebKit does, keeps them from it, and on the
+press dispatches the `mousedown` and `mouseup` a browser sends for them
+(`button` 3 and 4), on which the web UI steps its own history.
 
 What the app adds on top: several windows (`Ctrl+N`), each with its own page,
 token and connections; windows titled by their page; "Update and reload" in

@@ -30,6 +30,47 @@ enum State {
     Failed(String),
 }
 
+/// The mouse's back and forward buttons (GDK's 8 and 9) reach the page as a
+/// left button. The window sees every button event before WebKit's own
+/// controllers do (a capture-phase legacy controller, which reads the raw
+/// event), so it keeps these two from WebKit, and hands the page the press and
+/// release a browser sends for them (`button` 3 and 4), on which the web UI
+/// steps its own history. It acts on the press, so a lost release can't
+/// swallow it. It needs no change to the page or the bridge.
+fn history_buttons(web: &adw::Bin) -> gtk::EventControllerLegacy {
+    let controller = gtk::EventControllerLegacy::new();
+    controller.set_propagation_phase(gtk::PropagationPhase::Capture);
+    let web = web.downgrade();
+    controller.connect_event(move |_, event| {
+        let Some(event) = event.downcast_ref::<gtk::gdk::ButtonEvent>() else {
+            return glib::Propagation::Proceed;
+        };
+        let button = match event.button() {
+            8 => 3,
+            9 => 4,
+            _ => return glib::Propagation::Proceed,
+        };
+        if event.event_type() == gtk::gdk::EventType::ButtonPress
+            && let Some(view) = web
+                .upgrade()
+                .and_then(|web| web.child())
+                .and_then(|child| child.downcast::<webkit6::WebView>().ok())
+        {
+            view.evaluate_javascript(
+                &format!(
+                    "for (const type of ['mousedown', 'mouseup']) window.dispatchEvent(new MouseEvent(type, {{ button: {button}, bubbles: true, cancelable: true }}))"
+                ),
+                None,
+                None,
+                None::<&gio::Cancellable>,
+                |_| {},
+            );
+        }
+        glib::Propagation::Stop
+    });
+    controller
+}
+
 pub struct CohesionWindow {
     pub window: adw::ApplicationWindow,
     shell: std::rc::Weak<Shell>,
@@ -102,6 +143,8 @@ impl CohesionWindow {
         let update = gio::SimpleAction::new("update", None);
         update.set_enabled(false);
         window.add_action(&update);
+
+        window.add_controller(history_buttons(&web));
 
         let this = Rc::new(CohesionWindow {
             window,
