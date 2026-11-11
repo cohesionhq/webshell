@@ -8,9 +8,10 @@ struct CohesionWebUI: View {
     let client: WebUIClient
     let route: DaemonRoute?
     let pairings: PairingStore
-    let onPair: () -> Void
+    let onPair: (RemotePairing) -> Void
 
-    init(client: WebUIClient, route: DaemonRoute?, pairings: PairingStore, onPair: @escaping () -> Void = {}) {
+    /// `onPair` runs with each pairing made in the form.
+    init(client: WebUIClient, route: DaemonRoute?, pairings: PairingStore, onPair: @escaping (RemotePairing) -> Void = { _ in }) {
         self.client = client
         self.route = route
         self.pairings = pairings

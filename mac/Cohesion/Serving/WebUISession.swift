@@ -29,6 +29,10 @@ final class WebUISession {
             token: token,
             target: route.target
         )
+        // Each account's pages keep their storage apart from every other's.
+        if case .remote(let pairing) = route {
+            configuration.websiteDataStore = WKWebsiteDataStore(forIdentifier: pairing.dataStoreID)
+        }
         configuration.userContentController.addUserScript(
             WKUserScript(source: SocketBridge.script, injectionTime: .atDocumentStart, forMainFrameOnly: true)
         )

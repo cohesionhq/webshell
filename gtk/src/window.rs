@@ -1,6 +1,6 @@
-//! One window's web UI, or what stands in its way: the pairing page when
-//! there is no pairing or the server no longer trusts this app, a spinner
-//! while it loads, and why it couldn't.
+//! One window's web UI, on one account, or what stands in its way: the
+//! pairing page when it has no account or the server no longer trusts this
+//! app, a spinner while it loads, and why it couldn't.
 
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
@@ -12,7 +12,8 @@ use crate::{
     RUNTIME,
     assets::{LoadError, WebAssets},
     connection::ConnectionError,
-    pairing_page,
+    pairing::RemotePairing,
+    pairing_page, preferences,
     session::WebUISession,
     shell::Shell,
 };
@@ -75,24 +76,32 @@ pub struct CohesionWindow {
     pub window: adw::ApplicationWindow,
     shell: std::rc::Weak<Shell>,
     header: adw::HeaderBar,
+    account_button: gtk::MenuButton,
+    /// `win.account`, whose state is the id of the account the window is
+    /// on, or empty while it pairs.
+    account_action: gio::SimpleAction,
     stack: gtk::Stack,
     web: adw::Bin,
     failed: adw::StatusPage,
     toasts: adw::ToastOverlay,
     update: gio::SimpleAction,
+    preferences: gio::SimpleAction,
+    /// The id of the account the window is on; `None` until it pairs.
+    account: RefCell<Option<String>>,
     state: RefCell<State>,
     loading: RefCell<Option<glib::JoinHandle<()>>>,
 }
 
 impl CohesionWindow {
-    pub fn new(shell: &Rc<Shell>) -> Rc<CohesionWindow> {
+    /// A window on the account with this id, or on the pairing page.
+    pub fn new(shell: &Rc<Shell>, account: Option<String>) -> Rc<CohesionWindow> {
         let menu = gio::Menu::new();
         let section = gio::Menu::new();
         section.append(Some("New window"), Some("app.new-window"));
         menu.append_section(None, &section);
         let section = gio::Menu::new();
         section.append(Some("Update and reload"), Some("win.update"));
-        section.append(Some("Preferences"), Some("app.preferences"));
+        section.append(Some("Preferences"), Some("win.preferences"));
         menu.append_section(None, &section);
         let menu_button = gtk::MenuButton::builder()
             .icon_name("open-menu-symbolic")
@@ -103,6 +112,13 @@ impl CohesionWindow {
         let header = adw::HeaderBar::builder().show_title(false).build();
         header.add_css_class("overlay");
         header.pack_end(&menu_button);
+        // The account switcher, as multi-account GNOME apps have it: the
+        // window's account, the others, and "Add account…".
+        let account_button = gtk::MenuButton::builder()
+            .menu_model(&shell.accounts_menu)
+            .tooltip_text("Switch account")
+            .build();
+        header.pack_end(&account_button);
 
         let loading = adw::StatusPage::builder().title("Connecting…").build();
         loading.set_paintable(Some(&adw::SpinnerPaintable::new(Some(&loading))));
@@ -119,7 +135,6 @@ impl CohesionWindow {
         let web = adw::Bin::new();
         let stack = gtk::Stack::new();
         stack.add_named(&loading, Some("loading"));
-        stack.add_named(&pairing_page::new(shell), Some("pairing"));
         stack.add_named(&failed, Some("failed"));
         stack.add_named(&web, Some("web"));
 
@@ -143,20 +158,68 @@ impl CohesionWindow {
         let update = gio::SimpleAction::new("update", None);
         update.set_enabled(false);
         window.add_action(&update);
+        let preferences = gio::SimpleAction::new("preferences", None);
+        preferences.set_enabled(false);
+        window.add_action(&preferences);
+        let account_action = gio::SimpleAction::new_stateful(
+            "account",
+            Some(&String::static_variant_type()),
+            &account.clone().unwrap_or_default().to_variant(),
+        );
+        window.add_action(&account_action);
+        let add_account = gio::SimpleAction::new("add-account", None);
+        window.add_action(&add_account);
 
         window.add_controller(history_buttons(&web));
 
+        let shell_weak = Rc::downgrade(shell);
         let this = Rc::new(CohesionWindow {
             window,
             shell: Rc::downgrade(shell),
             header,
+            account_button,
+            account_action,
             stack,
             web,
             failed,
             toasts,
             update,
+            preferences,
+            account: RefCell::new(account),
             state: RefCell::new(State::Loading),
             loading: RefCell::default(),
+        });
+        let weak = Rc::downgrade(&this);
+        let on_pair = move |pairing: RemotePairing| {
+            let (Some(this), Some(shell)) = (weak.upgrade(), shell_weak.upgrade()) else {
+                return;
+            };
+            *this.account.borrow_mut() = Some(pairing.id().to_string());
+            shell.add_pairing(pairing);
+            this.load();
+        };
+        this.stack
+            .add_named(&pairing_page::new(on_pair), Some("pairing"));
+        let weak = Rc::downgrade(&this);
+        this.preferences.connect_activate(move |_, _| {
+            let Some(this) = weak.upgrade() else { return };
+            let (Some(shell), Some(pairing)) = (this.shell.upgrade(), this.pairing()) else {
+                return;
+            };
+            preferences::present(&shell, &pairing, &this.window);
+        });
+        let weak = Rc::downgrade(&this);
+        this.account_action.connect_activate(move |_, target| {
+            if let (Some(this), Some(id)) = (weak.upgrade(), target.and_then(|t| t.get::<String>()))
+            {
+                this.switch_account(Some(id));
+            }
+        });
+        let weak = Rc::downgrade(&this);
+        add_account.connect_activate(move |_, _| {
+            if let Some(this) = weak.upgrade() {
+                this.switch_account(None);
+            }
         });
         let weak = Rc::downgrade(&this);
         retry.connect_clicked(move |_| {
@@ -173,13 +236,52 @@ impl CohesionWindow {
         this
     }
 
-    /// Loads the UI for the shell's pairing, unless it is already showing
+    /// The id of the account the window is on, if it has one.
+    pub fn account(&self) -> Option<String> {
+        self.account.borrow().clone()
+    }
+
+    /// The account the window is on, while the app is still paired with it.
+    fn pairing(&self) -> Option<RemotePairing> {
+        let shell = self.shell.upgrade()?;
+        shell.pairing(self.account.borrow().as_deref()?)
+    }
+
+    /// Puts the window on the account with this id, or on the pairing page
+    /// for a new one.
+    fn switch_account(self: &Rc<Self>, account: Option<String>) {
+        *self.account.borrow_mut() = account;
+        self.load();
+    }
+
+    /// Shows the window's account in the account switcher, which is there
+    /// once the app has paired.
+    pub fn show_account(&self) {
+        let pairing = self.pairing();
+        let id = pairing
+            .as_ref()
+            .map(|p| p.id().to_string())
+            .unwrap_or_default();
+        self.account_action.set_state(&id.to_variant());
+        self.account_button
+            .set_label(&pairing.map_or_else(|| "New account".to_string(), |p| p.label()));
+        self.account_button.set_visible(
+            self.shell
+                .upgrade()
+                .is_some_and(|shell| shell.has_pairings()),
+        );
+    }
+
+    /// Loads the UI for the window's account, unless it is already showing
     /// for it, trying again while the server can't be reached.
     pub fn load(self: &Rc<Self>) {
         if let Some(loading) = self.loading.take() {
             loading.abort();
         }
-        let Some(pairing) = self.shell.upgrade().and_then(|shell| shell.pairing()) else {
+        self.show_account();
+        let pairing = self.pairing();
+        self.preferences.set_enabled(pairing.is_some());
+        let Some(pairing) = pairing else {
             self.show(State::Unpaired);
             return;
         };
@@ -229,12 +331,13 @@ impl CohesionWindow {
         self.load();
     }
 
-    fn show_ready(self: &Rc<Self>, pairing: crate::pairing::RemotePairing, assets: Arc<WebAssets>) {
+    fn show_ready(self: &Rc<Self>, pairing: RemotePairing, assets: Arc<WebAssets>) {
         let Some(shell) = self.shell.upgrade() else {
             return;
         };
         let weak = Rc::downgrade(self);
-        let session = WebUISession::new(pairing, assets, &shell.network, move || {
+        let network = shell.network(&pairing);
+        let session = WebUISession::new(pairing, assets, &network, move || {
             if let Some(this) = weak.upgrade() {
                 this.offer_update();
             }

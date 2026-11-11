@@ -6,20 +6,38 @@ import SystemConfiguration
 import UIKit
 #endif
 
-/// This app's identities with cohesiond, kept in the keychain: its pairing
-/// with a server elsewhere and, on a Mac, its key on the Mac's own server.
+/// This app's identities with cohesiond, kept in the keychain: its pairings
+/// with servers elsewhere, each an account, and, on a Mac, its key on the
+/// Mac's own server.
 @Observable
 final class PairingStore {
-    private static let remoteItem = KeychainItem<RemotePairing>(account: "pairing")
+    private static let remotesItem = KeychainItem<[RemotePairing]>(account: "pairings")
+    /// Where a single pairing was kept before the app took several.
+    private static let legacyItem = KeychainItem<RemotePairing>(account: "pairing")
     #if os(macOS)
     private static let localItem = KeychainItem<LocalIdentity>(account: "localIdentity")
     #endif
 
-    /// The server this app paired with, if it has.
-    private(set) var remote: RemotePairing?
+    /// The servers this app paired with, in the order they were made.
+    private(set) var remotes: [RemotePairing]
 
+    /// Loads the pairings. A single pairing kept by an earlier version
+    /// becomes the first, and is removed once the list is saved.
     init() {
-        remote = Self.remoteItem.load()
+        if let remotes = Self.remotesItem.load() {
+            self.remotes = remotes
+        } else if let legacy = Self.legacyItem.load() {
+            Self.remotesItem.save([legacy])
+            if Self.remotesItem.load() != nil { Self.legacyItem.remove() }
+            remotes = [legacy]
+        } else {
+            remotes = []
+        }
+    }
+
+    /// The account with this id, while the app is still paired with it.
+    func remote(id: String) -> RemotePairing? {
+        remotes.first { $0.id == id }
     }
 
     /// The computer's name, as the Sharing settings show it ("Mac mini"), or
@@ -41,20 +59,27 @@ final class PairingStore {
         return generatedClientName(device: deviceName, client: app ?? "Cohesion")
     }
 
-    /// Registers as `name` with the server that printed `setupCode`,
-    /// replacing any earlier pairing once it has.
-    func pair(setupCode: String, name: String) async throws(PairingError) {
+    /// Registers as `name` with the server that printed `setupCode`, as the
+    /// account `accountName` (blank for none), replacing an earlier pairing
+    /// with the same server once it has.
+    func pair(setupCode: String, name: String, accountName: String) async throws(PairingError) -> RemotePairing {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let pairing = try await RemotePairing.register(setupCode: setupCode, name: name)
-        Self.remoteItem.save(pairing)
-        remote = pairing
+        let accountName = accountName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let pairing = try await RemotePairing.register(setupCode: setupCode, name: name, accountName: accountName)
+        if let index = remotes.firstIndex(where: { $0.id == pairing.id }) {
+            remotes[index] = pairing
+        } else {
+            remotes.append(pairing)
+        }
+        Self.remotesItem.save(remotes)
+        return pairing
     }
 
-    /// Forgets the pairing with the server elsewhere, and the key it trusts,
-    /// so the app has to pair again.
-    func unpair() {
-        Self.remoteItem.remove()
-        remote = nil
+    /// Forgets the account with this id, and the key its server trusts, so
+    /// windows on it have to pair again.
+    func unpair(id: String) {
+        remotes.removeAll { $0.id == id }
+        Self.remotesItem.save(remotes)
     }
 
     #if os(macOS)
