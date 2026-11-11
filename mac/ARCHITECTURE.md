@@ -25,16 +25,21 @@ The sandbox, network and other capabilities are build settings.
 
 ## Flow
 
-`CohesionApp` (`Cohesion/CohesionApp.swift`) owns a `PairingStore`, and each
-window (`CohesionWindow`) owns a `WebUIClient` and shows `CohesionWebUI` for
-the route `pairings.remote.map(DaemonRoute.remote)`. Windows share the
-pairing and the pages' web storage, but each has its own page, token and
+`CohesionApp` (`Cohesion/CohesionApp.swift`) owns a `PairingStore`, whose
+pairings with servers elsewhere are the accounts. Each window
+(`CohesionWindow`) is on one account, its `WindowAccount` value, which
+SwiftUI restores with it, owns a `WebUIClient`, and shows `CohesionWebUI` for
+that account's route. A pairing is known by its server's fingerprint, so
+pairing with the same server again replaces it. The pages of one account
+share a website data store (`RemotePairing.dataStoreID`), which no other
+account's pages see, but each window has its own page, token and
 connection. Everything below happens in the web UI host:
 
 1. **Pair.** With no route, or once the server stops trusting the app,
    `CohesionWebUI` shows the pairing form (a sheet on iPad, a view on Mac). The
-   setup code registers with the server's `/register`, and the certificate and
-   key go in the keychain (`Pairing/`).
+   setup code registers with the server's `/register`, and the certificates,
+   keys and account names go in the keychain as one list (`Pairing/`). An
+   older single pairing becomes the first.
 2. **Connect.** `DaemonRoute.remote` is a server elsewhere over mutual TLS. On
    a Mac, `.local` reaches this Mac's `cohesiond` over its Unix socket
    (`Connection/`).
@@ -52,8 +57,11 @@ connection. Everything below happens in the web UI host:
    bar and sets `--titlebar-inset` on `<html>` to the height to keep clear.
 
 What the app adds on top: `.hiddenTitleBar` on Mac, windows titled by their
-page, the Cohesion menu's "Update and reload" and "Unpair" (for the
-frontmost window), and the update banner (`UpdateOffer`).
+page, the File menu's new windows (with several accounts, New Window lists
+"New <account> Window" for each, as Safari does its profiles, ⌘N on the
+frontmost window's) and "Add Account…", the Cohesion menu's "Update and
+reload" and "Unpair" (for the frontmost window and its account), and the
+update banner (`UpdateOffer`).
 
 ## Stable API
 

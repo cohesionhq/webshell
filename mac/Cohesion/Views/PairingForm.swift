@@ -4,12 +4,12 @@ import SwiftUI
 /// printed, under a name that starts as the device's and the app's.
 struct PairingForm: View {
     let store: PairingStore
-    let onPair: () -> Void
+    let onPair: (RemotePairing) -> Void
 
     @State private var draft = PairingDraft()
 
-    /// `onPair` runs once the store holds the new pairing.
-    init(store: PairingStore, onPair: @escaping () -> Void = {}) {
+    /// `onPair` runs with the new pairing once the store holds it.
+    init(store: PairingStore, onPair: @escaping (RemotePairing) -> Void = { _ in }) {
         self.store = store
         self.onPair = onPair
     }
@@ -27,6 +27,11 @@ struct PairingForm: View {
                     .textInputAutocapitalization(.never)
                     #endif
                     .autocorrectionDisabled()
+                    .onSubmit(pair)
+                    .padding(12)
+                Divider()
+                    .padding(.leading, 12)
+                TextField("Account Name (Optional)", text: $draft.accountName)
                     .onSubmit(pair)
                     .padding(12)
             }
@@ -63,9 +68,9 @@ struct PairingForm: View {
 /// Stands in for the web UI while there is no server to show it for.
 struct PairingView: View {
     let store: PairingStore
-    let onPair: () -> Void
+    let onPair: (RemotePairing) -> Void
 
-    init(store: PairingStore, onPair: @escaping () -> Void = {}) {
+    init(store: PairingStore, onPair: @escaping (RemotePairing) -> Void = { _ in }) {
         self.store = store
         self.onPair = onPair
     }

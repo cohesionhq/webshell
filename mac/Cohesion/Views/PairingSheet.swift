@@ -4,7 +4,7 @@ import SwiftUI
 /// Pairs an iPad, as a form in a sheet over the empty app.
 struct PairingSheet: View {
     let store: PairingStore
-    let onPair: () -> Void
+    let onPair: (RemotePairing) -> Void
 
     @State private var draft = PairingDraft()
 
@@ -21,6 +21,7 @@ struct PairingSheet: View {
                 }
                 Section {
                     TextField("Name", text: $draft.name)
+                    TextField("Account Name (Optional)", text: $draft.accountName)
                 } footer: {
                     if let error = draft.error {
                         Text(error)
