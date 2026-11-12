@@ -56,7 +56,7 @@ impl Shell {
         });
         app.add_action(&new_window);
         app.add_action(&quit);
-        app.set_accels_for_action("app.new-window", &["<Control>n"]);
+        app.set_accels_for_action("app.new-window", &["<Shift><Control>n"]);
         app.set_accels_for_action("win.preferences", &["<Control>comma"]);
         app.set_accels_for_action("app.quit", &["<Control>q"]);
         app.set_accels_for_action("window.close", &["<Control>w"]);

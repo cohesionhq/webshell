@@ -79,7 +79,8 @@ private struct CohesionCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
             // As Safari's profiles: with several accounts, New Window names
-            // each, and ⌘N opens one on the frontmost window's.
+            // each, and ⇧⌘N opens one on the frontmost window's,
+            // leaving ⌘N to the page.
             if pairings.remotes.count > 1 {
                 let current = accountID ?? pairings.remotes.first?.id
                 Menu("New Window") {
@@ -87,14 +88,14 @@ private struct CohesionCommands: Commands {
                         Button("New \(remote.label) Window") {
                             openWindow(id: "main", value: WindowAccount.pairing(remote.id))
                         }
-                        .keyboardShortcut(remote.id == current ? KeyboardShortcut("n") : nil)
+                        .keyboardShortcut(remote.id == current ? KeyboardShortcut("n", modifiers: [.command, .shift]) : nil)
                     }
                 }
             } else {
                 Button("New Window") {
                     openWindow(id: "main", value: pairings.remotes.first.map { WindowAccount.pairing($0.id) } ?? .new)
                 }
-                .keyboardShortcut("n")
+                .keyboardShortcut("n", modifiers: [.command, .shift])
             }
             Button("Add Account…") { openWindow(id: "main", value: WindowAccount.new) }
         }

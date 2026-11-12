@@ -73,7 +73,7 @@ them from the raw event before WebKit does, keeps them from it, and on the
 press dispatches the `mousedown` and `mouseup` a browser sends for them
 (`button` 3 and 4), on which the web UI steps its own history.
 
-What the app adds on top: several windows (`Ctrl+N`, on the frontmost
+What the app adds on top: several windows (`Shift+Ctrl+N`, on the frontmost
 window's account), each with its own page, token and connections; an account
 switcher in the header bar, as multi-account GNOME apps have, which puts the
 window on another account or, with "Add account…", on the pairing page;
