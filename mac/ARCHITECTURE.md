@@ -58,7 +58,7 @@ connection. Everything below happens in the web UI host:
 
 What the app adds on top: `.hiddenTitleBar` on Mac, windows titled by their
 page, the File menu's new windows (with several accounts, New Window lists
-"New <account> Window" for each, as Safari does its profiles, ⇧⌘N on the
+"New <account> Window" for each, as Safari does its profiles, ⌥⌘N on the
 frontmost window's, leaving ⌘N to the page) and "Add Account…", the
 Cohesion menu's "Update and reload" and "Unpair" (for the frontmost window
 and its account), the View menu's Back (⌘[) and Forward (⌘]) through the
