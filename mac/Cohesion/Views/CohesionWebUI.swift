@@ -183,7 +183,9 @@ struct WebUIView: View {
 
 #if os(macOS)
 /// Takes a mouse's back and forward buttons, clicked in this view's window,
-/// through `page`'s history, as a browser does. The page fills its window.
+/// through `page`'s history, as a browser does: buttons 3 and 4, or the
+/// swipe that drivers like SteerMouse send for them, as a trackpad's
+/// three-finger swipe does. The page fills its window.
 private struct MouseNavigation: NSViewRepresentable {
     let page: WebPage
 
@@ -204,12 +206,16 @@ private struct MouseNavigation: NSViewRepresentable {
             if let monitor { NSEvent.removeMonitor(monitor) }
             monitor = nil
             guard window != nil else { return }
-            monitor = NSEvent.addLocalMonitorForEvents(matching: .otherMouseDown) { [weak self] event in
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.otherMouseDown, .swipe]) { [weak self] event in
                 guard let self, let page, event.window === window else { return event }
-                switch event.buttonNumber {
-                case 3: page.goBack()
-                case 4: page.goForward()
-                default: return event
+                // A swipe's deltaX is 1 back, -1 forward. Only a mouse event has a button number.
+                let step = event.type == .swipe ? event.deltaX : [3: 1, 4: -1][event.buttonNumber] ?? 0
+                if step > 0 {
+                    page.goBack()
+                } else if step < 0 {
+                    page.goForward()
+                } else {
+                    return event
                 }
                 return nil
             }
