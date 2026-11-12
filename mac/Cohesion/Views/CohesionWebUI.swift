@@ -128,6 +128,7 @@ struct WebUIView: View {
                 )
             }
             #if os(macOS)
+            .background { MouseNavigation(page: session.page) }
             // The web view would take the clicks a title bar uses to move the window.
             .overlay(alignment: .top) {
                 Color.clear
@@ -179,3 +180,43 @@ struct WebUIView: View {
         let isLoading: Bool
     }
 }
+
+#if os(macOS)
+/// Takes a mouse's back and forward buttons, clicked in this view's window,
+/// through `page`'s history, as a browser does. The page fills its window.
+private struct MouseNavigation: NSViewRepresentable {
+    let page: WebPage
+
+    func makeNSView(context: Context) -> MonitorView {
+        MonitorView()
+    }
+
+    func updateNSView(_ view: MonitorView, context: Context) {
+        view.page = page
+    }
+
+    final class MonitorView: NSView {
+        var page: WebPage?
+        private var monitor: Any?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+            guard window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .otherMouseDown) { [weak self] event in
+                guard let self, let page, event.window === window else { return event }
+                switch event.buttonNumber {
+                case 3: page.goBack()
+                case 4: page.goForward()
+                default: return event
+                }
+                return nil
+            }
+        }
+
+        // Clicks are the web view's.
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    }
+}
+#endif

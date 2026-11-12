@@ -8,8 +8,37 @@ extension WebUIClient {
     }
 
     /// The page showing, once loaded.
-    private var page: WebPage? {
+    var page: WebPage? {
         guard case .ready(let session) = state else { return nil }
         return session.page
+    }
+}
+
+extension WebPage {
+    /// Whether the page's history has an entry before the one showing.
+    var canGoBack: Bool { !backForwardList.backList.isEmpty }
+
+    /// Whether the page's history has an entry after the one showing.
+    var canGoForward: Bool { !backForwardList.forwardList.isEmpty }
+
+    /// Goes back one entry in the page's history, as the browser's Back does.
+    func goBack() {
+        go(to: backForwardList.backList.last)
+    }
+
+    /// Goes forward one entry in the page's history.
+    func goForward() {
+        go(to: backForwardList.forwardList.first)
+    }
+
+    private func go(to item: BackForwardList.Item?) {
+        guard let item else { return }
+        Task {
+            do {
+                for try await _ in load(item) {}
+            } catch {
+                // WebKit shows its own error page.
+            }
+        }
     }
 }

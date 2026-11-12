@@ -98,6 +98,17 @@ private struct CohesionCommands: Commands {
             }
             Button("Add Account…") { openWindow(id: "main", value: WindowAccount.new) }
         }
+        // As a browser's: through the page's own history, which its routes
+        // push to.
+        CommandGroup(before: .toolbar) {
+            Button("Back") { webUI?.page?.goBack() }
+                .keyboardShortcut("[")
+                .disabled(webUI?.page?.canGoBack != true)
+            Button("Forward") { webUI?.page?.goForward() }
+                .keyboardShortcut("]")
+                .disabled(webUI?.page?.canGoForward != true)
+            Divider()
+        }
         CommandGroup(after: .appSettings) {
             Button("Install Update…") { webUI?.update() }
                 .disabled(webUI?.updateAvailable != true)

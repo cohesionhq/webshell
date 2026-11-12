@@ -60,8 +60,10 @@ What the app adds on top: `.hiddenTitleBar` on Mac, windows titled by their
 page, the File menu's new windows (with several accounts, New Window lists
 "New <account> Window" for each, as Safari does its profiles, ⌘N on the
 frontmost window's) and "Add Account…", the Cohesion menu's "Update and
-reload" and "Unpair" (for the frontmost window and its account), and the
-update banner (`UpdateOffer`).
+reload" and "Unpair" (for the frontmost window and its account), the View
+menu's Back (⌘[) and Forward (⌘]) through the page's history, which a
+mouse's back and forward buttons also take on Mac, and the update banner
+(`UpdateOffer`).
 
 ## Stable API
 
