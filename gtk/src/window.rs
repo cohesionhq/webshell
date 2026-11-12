@@ -100,7 +100,7 @@ impl CohesionWindow {
         section.append(Some("New window"), Some("app.new-window"));
         menu.append_section(None, &section);
         let section = gio::Menu::new();
-        section.append(Some("Update and reload"), Some("win.update"));
+        section.append(Some("Install update…"), Some("win.update"));
         section.append(Some("Preferences"), Some("win.preferences"));
         menu.append_section(None, &section);
         let menu_button = gtk::MenuButton::builder()

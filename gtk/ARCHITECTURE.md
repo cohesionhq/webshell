@@ -77,8 +77,8 @@ What the app adds on top: several windows (`Ctrl+N`, on the frontmost
 window's account), each with its own page, token and connections; an account
 switcher in the header bar, as multi-account GNOME apps have, which puts the
 window on another account or, with "Add account…", on the pairing page;
-windows titled by their page; "Update and reload" in the main menu and as a
-toast once a newer build is served; and Preferences (`Ctrl+,`), which shows
+windows titled by their page; "Install update…" in the main menu and
+"Update and reload" on a toast once a newer build is served; and Preferences (`Ctrl+,`), which shows
 the window's account and unpairs it.
 
 ## Stable API

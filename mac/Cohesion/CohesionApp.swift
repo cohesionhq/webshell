@@ -99,7 +99,7 @@ private struct CohesionCommands: Commands {
             Button("Add Account…") { openWindow(id: "main", value: WindowAccount.new) }
         }
         CommandGroup(after: .appSettings) {
-            Button("Update and reload") { webUI?.update() }
+            Button("Install Update…") { webUI?.update() }
                 .disabled(webUI?.updateAvailable != true)
             Button("Unpair") {
                 if let accountID { pairings.unpair(id: accountID) }
