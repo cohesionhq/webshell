@@ -7,12 +7,16 @@ import WebKit
 /// opens a session on `route` for each socket, relays text frames both ways
 /// unchanged, and closes either side when the other closes, as `cohesion
 /// open`'s `bridge.rs` does. The page talks to it as it would to the proxy:
-/// `/connect?token=<token>`, refused without the session's token.
+/// `/connect?token=<token>`, refused without the session's token. A
+/// session's first frame, its `hello`, names the build the server serves;
+/// `onUpdate` runs when that isn't `bundleHash`, the build the page shows.
 final class SocketBridge: NSObject, WKScriptMessageHandler {
     static let handlerName = "cohesionSocket"
 
     private let route: DaemonRoute
     private let token: String
+    private let bundleHash: String
+    private let onUpdate: () -> Void
     /// The page frames go back to; set once it exists.
     weak var page: WebPage?
     /// Each open socket's session, by the id the page gave the socket.
@@ -21,9 +25,11 @@ final class SocketBridge: NSObject, WKScriptMessageHandler {
     private let deliveries: AsyncStream<Delivery>.Continuation
     private var delivering: Task<Void, Never>?
 
-    init(route: DaemonRoute, token: String) {
+    init(route: DaemonRoute, token: String, hash: String, onUpdate: @escaping () -> Void) {
         self.route = route
         self.token = token
+        self.bundleHash = hash
+        self.onUpdate = onUpdate
         let (stream, deliveries) = AsyncStream.makeStream(of: Delivery.self)
         self.deliveries = deliveries
         super.init()
@@ -74,10 +80,16 @@ final class SocketBridge: NSObject, WKScriptMessageHandler {
         sessions[id] = session
         deliveries.yield(.opened(id))
         let deliveries = deliveries
+        let bundleHash = bundleHash
         Task { [weak self] in
             var code = 1000
+            var isFirst = true
             do {
                 for try await frame in connection.frames {
+                    if isFirst {
+                        isFirst = false
+                        if Self.namesOtherBuild(frame, than: bundleHash) { self?.onUpdate() }
+                    }
                     deliveries.yield(.message(id, frame))
                 }
             } catch {
@@ -88,6 +100,27 @@ final class SocketBridge: NSObject, WKScriptMessageHandler {
             sessions[id] = nil
             session.close()
             deliveries.yield(.closed(id, code: code))
+        }
+    }
+
+    /// Whether `frame` is a `hello` naming a build of the web UI other than `hash`.
+    private nonisolated static func namesOtherBuild(_ frame: String, than hash: String) -> Bool {
+        guard let hello = try? JSONDecoder().decode(Hello.self, from: Data(frame.utf8)),
+              hello.type == "hello",
+              let other = hello.webBundleHash
+        else { return false }
+        return other != hash
+    }
+
+    /// The parts of a `hello` frame that name the server's build.
+    private nonisolated struct Hello: Decodable {
+        let type: String
+        /// `nil` when the server was built without the UI.
+        let webBundleHash: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case webBundleHash = "web_bundle_hash"
         }
     }
 

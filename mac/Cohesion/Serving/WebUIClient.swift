@@ -19,7 +19,13 @@ final class WebUIClient {
     /// up. At login, cohesiond settles its agents before it opens its socket.
     private static let attempts = 30
 
-    private(set) var state = State.loading
+    private(set) var state = State.loading {
+        // A new page, or none, is the newest build anyone has seen.
+        didSet { updateAvailable = false }
+    }
+    /// Whether the server now serves a newer build of the web UI than the
+    /// page shows, which a session finds once the page reconnects.
+    private(set) var updateAvailable = false
     /// Bumped by `retry()`, which loads again.
     private(set) var generation = 0
 
@@ -27,6 +33,12 @@ final class WebUIClient {
 
     /// Loads again after a failure.
     func retry() {
+        generation += 1
+    }
+
+    /// Loads the newer build the server serves, in place of this page.
+    func update() {
+        state = .loading
         generation += 1
     }
 
@@ -50,7 +62,9 @@ final class WebUIClient {
             do {
                 let assets = try await WebAssets.load(from: route)
                 guard !Task.isCancelled else { return }
-                state = .ready(WebUISession(route: route, assets: assets))
+                state = .ready(WebUISession(route: route, assets: assets) { [weak self] in
+                    self?.updateAvailable = true
+                })
                 return
             } catch ConnectionError.unpaired {
                 state = .unpaired
