@@ -1,5 +1,5 @@
 //! Carries the page's `/connect` WebSockets, which a URI scheme can't
-//! answer, to sessions of the app's own, as CohesionWebKit's `SocketBridge`
+//! answer, to sessions of the app's own, as `mac/`'s `SocketBridge`
 //! does.
 //!
 //! `bridge.js` stands in for `WebSocket` on that one URL and posts what the

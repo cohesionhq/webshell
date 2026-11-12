@@ -1,4 +1,3 @@
-import CohesionWebKit
 import SwiftUI
 
 /// Shows the Cohesion web UI for the server this device paired with, served

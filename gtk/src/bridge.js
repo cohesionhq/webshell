@@ -1,7 +1,7 @@
 // Replaces `WebSocket` for `/connect` on the page's own origin, before the
 // page's scripts run; any other URL gets a real WebSocket. Each socket has a
 // random id, so a reply meant for a socket of a document that has since
-// reloaded finds nothing. The same script as CohesionWebKit's `SocketBridge`.
+// reloaded finds nothing. The same script as `mac/`'s `SocketBridge`.
 (() => {
     const handler = window.webkit.messageHandlers.cohesionSocket;
     const NativeWebSocket = window.WebSocket;
