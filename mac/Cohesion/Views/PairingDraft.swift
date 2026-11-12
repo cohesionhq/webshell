@@ -7,6 +7,8 @@ import Observation
 final class PairingDraft {
     var name = PairingStore.generatedName
     var setupCode = ""
+    /// What to call the account; blank leaves it named for its server.
+    var accountName = ""
     private(set) var isPairing = false
     private(set) var error: String?
 
@@ -14,16 +16,18 @@ final class PairingDraft {
         !setupCode.isEmpty && !name.trimmingCharacters(in: .whitespaces).isEmpty && !isPairing
     }
 
-    /// Registers with `store`, then runs `onPair` once it holds the pairing.
-    func pair(with store: PairingStore, onPair: @escaping () -> Void) {
+    /// Registers with `store`, then runs `onPair` with the pairing once the
+    /// store holds it.
+    func pair(with store: PairingStore, onPair: @escaping (RemotePairing) -> Void) {
         guard canPair else { return }
         isPairing = true
         error = nil
         Task {
             do throws(PairingError) {
-                try await store.pair(setupCode: setupCode, name: name)
+                let pairing = try await store.pair(setupCode: setupCode, name: name, accountName: accountName)
                 setupCode = ""
-                onPair()
+                accountName = ""
+                onPair(pairing)
             } catch {
                 self.error = error.localizedDescription
             }

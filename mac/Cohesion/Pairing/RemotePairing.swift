@@ -3,9 +3,10 @@ import Foundation
 import Security
 
 /// This device's registration with a cohesiond elsewhere, made from a setup
-/// code: where the server is, the key its certificate must carry, and the
-/// certificate and key this device presents to it.
-nonisolated struct RemotePairing: Codable, Equatable, Sendable {
+/// code: where the server is, the key its certificate must carry, the
+/// certificate and key this device presents to it, and what the account is
+/// called. Each is an account the app can open a window on.
+nonisolated struct RemotePairing: Codable, Equatable, Identifiable, Sendable {
     /// The server's address, as the setup code gave it.
     let host: String
     /// The server's HTTPS port, as the setup code gave it.
@@ -16,10 +17,12 @@ nonisolated struct RemotePairing: Codable, Equatable, Sendable {
     let privateKey: Data
     /// DER of this device's self-signed certificate.
     let certificate: Data
+    /// What the person called the account when they paired, if anything.
+    var accountName: String? = nil
 
     /// Registers a new key and certificate, named `name`, with the server
-    /// that printed `setupCode`.
-    static func register(setupCode: String, name: String) async throws(PairingError) -> RemotePairing {
+    /// that printed `setupCode`, as the account `accountName` (blank for none).
+    static func register(setupCode: String, name: String, accountName: String) async throws(PairingError) -> RemotePairing {
         let code = try SetupCode(setupCode)
         let key = P256.Signing.PrivateKey()
         let certificate: Data
@@ -33,10 +36,29 @@ nonisolated struct RemotePairing: Codable, Equatable, Sendable {
             port: code.port,
             serverFingerprint: code.fingerprint,
             privateKey: key.rawRepresentation,
-            certificate: certificate
+            certificate: certificate,
+            accountName: accountName.isEmpty ? nil : accountName
         )
         try await pairing.post(register: ["setup_key": code.key, "client_name": name])
         return pairing
+    }
+
+    /// Which server this is: pairing with the same server again replaces it.
+    var id: String { serverFingerprint }
+
+    /// What the account is called: the name given when pairing, or the
+    /// server's name or address, without the port.
+    var label: String { accountName ?? host }
+
+    /// Names the website data store this account's pages keep their storage
+    /// in, so no account's pages see another's: the first half of the
+    /// SHA-256 of the server's fingerprint.
+    var dataStoreID: UUID {
+        let digest = Array(SHA256.hash(data: Data(serverFingerprint.utf8)))
+        return UUID(uuid: (
+            digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7],
+            digest[8], digest[9], digest[10], digest[11], digest[12], digest[13], digest[14], digest[15]
+        ))
     }
 
     /// `https://host:port`, with an IPv6 address in brackets.

@@ -1,5 +1,6 @@
-//! This app's registration with a cohesiond elsewhere, made from a setup
-//! code, and where it is kept.
+//! This app's registrations with cohesiond servers elsewhere, made from
+//! setup codes, and where they are kept. Each is an account the app can
+//! open a window on.
 
 mod tls;
 
@@ -16,10 +17,13 @@ use rustls::{
 };
 use serde::{Deserialize, Serialize};
 
-/// Where the server is, the key its certificate must carry, and the
-/// certificate and key this app presents to it.
+/// Where the server is, the key its certificate must carry, the certificate
+/// and key this app presents to it, and what the account is called.
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct RemotePairing {
+    /// What the person called the account when they paired, if anything.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    account_name: Option<String>,
     pub host: Host,
     /// The HTTPS port, as the setup code gave it.
     pub port: u16,
@@ -51,14 +55,21 @@ impl std::fmt::Display for PairingError {
 
 impl RemotePairing {
     /// Registers a new key and certificate, named `name`, with the server
-    /// that printed `setup_code`.
-    pub async fn register(setup_code: &str, name: &str) -> Result<RemotePairing, PairingError> {
+    /// that printed `setup_code`, as the account `account_name` (blank for
+    /// none).
+    pub async fn register(
+        setup_code: &str,
+        name: &str,
+        account_name: &str,
+    ) -> Result<RemotePairing, PairingError> {
         let code = SetupCode::decode(setup_code).map_err(|_| PairingError::InvalidSetupCode)?;
         let identity_pem = Authentication::generate()
             .ok()
             .and_then(|key| key.self_signed_certificate_pem(name).ok())
             .ok_or(PairingError::CannotCreateIdentity)?;
+        let account_name = Some(account_name.trim().to_string()).filter(|name| !name.is_empty());
         let pairing = RemotePairing {
+            account_name,
             host: code.host,
             port: code.port,
             server_fingerprint: code.fingerprint,
@@ -70,6 +81,26 @@ impl RemotePairing {
         };
         pairing.post_register(&request).await?;
         Ok(pairing)
+    }
+
+    /// Which server this is: pairing with the same server again replaces it.
+    pub fn id(&self) -> &str {
+        &self.server_fingerprint
+    }
+
+    /// What the account is called: the name given when pairing, or the
+    /// server's name or address, without the port.
+    pub fn label(&self) -> String {
+        self.account_name
+            .clone()
+            .unwrap_or_else(|| self.host.to_string())
+    }
+
+    /// The directory, under this app's data and cache directories, that
+    /// holds this account's pages' storage, so no account's pages see
+    /// another's. The fingerprint is hex; anything else in it is dropped.
+    pub fn storage_name(&self) -> String {
+        self.id().chars().filter(char::is_ascii_hexdigit).collect()
     }
 
     /// `host:port`, with an IPv6 address in brackets.
@@ -131,42 +162,61 @@ impl RemotePairing {
     }
 }
 
-/// Where the pairing is kept: a file only this user may read, in this app's
-/// configuration directory.
+/// Where the pairings are kept: a file only this user may read, in this
+/// app's configuration directory, listing them in the order they were made.
 pub struct PairingStore;
 
 impl PairingStore {
     fn file() -> PathBuf {
+        crate::config_dir().join("pairings.json")
+    }
+
+    /// Where a single pairing was kept before the app took several.
+    fn legacy_file() -> PathBuf {
         crate::config_dir().join("pairing.json")
     }
 
-    /// The server this app paired with, if it has. A pairing that can't be
-    /// read is as good as none.
-    pub fn load() -> Option<RemotePairing> {
-        let text = match fs::read_to_string(Self::file()) {
-            Ok(text) => text,
-            Err(err) if err.kind() == ErrorKind::NotFound => return None,
-            Err(err) => {
-                eprintln!("couldn't read the pairing: {err}");
-                return None;
-            }
-        };
-        serde_json::from_str(&text).ok()
-    }
-
-    pub fn save(pairing: &RemotePairing) -> std::io::Result<()> {
-        create_private_dir(&crate::config_dir())?;
-        let json = serde_json::to_vec(pairing).expect("a pairing always serializes");
-        write_private(&Self::file(), &json)
-    }
-
-    /// Forgets the pairing, and with it the key the server trusts.
-    pub fn remove() {
-        if let Err(err) = fs::remove_file(Self::file())
-            && err.kind() != ErrorKind::NotFound
-        {
-            eprintln!("couldn't remove the pairing: {err}");
+    /// The servers this app paired with. A file that can't be read is as
+    /// good as none. A single pairing kept by an earlier version becomes the
+    /// first in the list.
+    pub fn load() -> Vec<RemotePairing> {
+        if let Some(text) = Self::read(&Self::file()) {
+            return serde_json::from_str(&text).unwrap_or_default();
         }
+        let Some(pairing) = Self::read(&Self::legacy_file())
+            .and_then(|text| serde_json::from_str::<RemotePairing>(&text).ok())
+        else {
+            return Vec::new();
+        };
+        let pairings = vec![pairing];
+        match Self::save(&pairings) {
+            Ok(()) => {
+                if let Err(err) = fs::remove_file(Self::legacy_file()) {
+                    eprintln!("couldn't remove the old pairing: {err}");
+                }
+            }
+            Err(err) => eprintln!("couldn't save the pairings: {err}"),
+        }
+        pairings
+    }
+
+    fn read(file: &PathBuf) -> Option<String> {
+        match fs::read_to_string(file) {
+            Ok(text) => Some(text),
+            Err(err) if err.kind() == ErrorKind::NotFound => None,
+            Err(err) => {
+                eprintln!("couldn't read the pairings: {err}");
+                None
+            }
+        }
+    }
+
+    /// Keeps `pairings` in place of those kept before; a pairing left out is
+    /// forgotten, and with it the key its server trusts.
+    pub fn save(pairings: &[RemotePairing]) -> std::io::Result<()> {
+        create_private_dir(&crate::config_dir())?;
+        let json = serde_json::to_vec(pairings).expect("pairings always serialize");
+        write_private(&Self::file(), &json)
     }
 }
 

@@ -21,8 +21,8 @@ impl WebUISession {
     /// A web view for `assets`, opened at `cohesion://app/#token=<token>`
     /// with a fresh token: the page reads it from the URL it is first
     /// opened at. Each session has its own web context, so the scheme
-    /// answers for this page alone; `network` is shared, and with it the
-    /// pages' storage.
+    /// answers for this page alone; `network` is the account's, shared by
+    /// its pages, and with it their storage.
     pub fn new(
         pairing: RemotePairing,
         assets: Arc<WebAssets>,

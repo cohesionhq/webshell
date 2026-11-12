@@ -1,7 +1,8 @@
 //! Stands in for the web UI while there is no server to show it for:
 //! registers this app with a server using the setup code it printed, under
 //! a name that starts as the computer's and this app's, such as
-//! `apollo (Cohesion)`.
+//! `apollo (Cohesion)`, and the account it makes under a name of the
+//! person's choosing.
 
 use std::rc::Rc;
 
@@ -11,21 +12,25 @@ use gtk::glib;
 use crate::{
     RUNTIME,
     pairing::{self, RemotePairing},
-    shell::Shell,
 };
 
-pub fn new(shell: &Rc<Shell>) -> gtk::Widget {
+/// `on_pair` runs with each new pairing.
+pub fn new(on_pair: impl Fn(RemotePairing) + 'static) -> gtk::Widget {
     let name = adw::EntryRow::builder()
         .title("Name")
         .text(pairing::suggested_name())
         .build();
     let code = adw::EntryRow::builder().title("Setup code").build();
+    let account = adw::EntryRow::builder()
+        .title("Account name (optional)")
+        .build();
     let rows = gtk::ListBox::builder()
         .selection_mode(gtk::SelectionMode::None)
         .css_classes(["boxed-list"])
         .build();
     rows.append(&name);
     rows.append(&code);
+    rows.append(&account);
     let pair = gtk::Button::builder()
         .label("Pair")
         .halign(gtk::Align::Center)
@@ -60,8 +65,14 @@ pub fn new(shell: &Rc<Shell>) -> gtk::Widget {
     }
 
     let start = {
-        let shell = Rc::downgrade(shell);
-        let (name, code, pair, error) = (name.clone(), code.clone(), pair.clone(), error.clone());
+        let on_pair = Rc::new(on_pair);
+        let (name, code, account, pair, error) = (
+            name.clone(),
+            code.clone(),
+            account.clone(),
+            pair.clone(),
+            error.clone(),
+        );
         move || {
             if !can_pair() || pair.child().is_some_and(|child| child.is::<adw::Spinner>()) {
                 return;
@@ -70,20 +81,27 @@ pub fn new(shell: &Rc<Shell>) -> gtk::Widget {
             error.set_visible(false);
             let setup_code = code.text().trim().to_string();
             let device = name.text().trim().to_string();
-            let (shell, code, pair, error) =
-                (shell.clone(), code.clone(), pair.clone(), error.clone());
+            let account_name = account.text().to_string();
+            let (on_pair, code, account, pair, error) = (
+                on_pair.clone(),
+                code.clone(),
+                account.clone(),
+                pair.clone(),
+                error.clone(),
+            );
             glib::spawn_future_local(async move {
                 let result = RUNTIME
-                    .spawn(async move { RemotePairing::register(&setup_code, &device).await })
+                    .spawn(async move {
+                        RemotePairing::register(&setup_code, &device, &account_name).await
+                    })
                     .await
                     .expect("pairing doesn't panic");
                 pair.set_label("Pair");
                 match result {
                     Ok(pairing) => {
                         code.set_text("");
-                        if let Some(shell) = shell.upgrade() {
-                            shell.set_pairing(Some(pairing));
-                        }
+                        account.set_text("");
+                        on_pair(pairing);
                     }
                     Err(err) => {
                         error.set_label(&err.to_string());
@@ -100,8 +118,13 @@ pub fn new(shell: &Rc<Shell>) -> gtk::Widget {
     }
     code.connect_entry_activated(move |_| start());
     // The name is usually right as it is; the code is what to type.
+    // Once the window has settled its own focus, which would otherwise land
+    // on the last row.
     page.connect_map(move |_| {
-        code.grab_focus();
+        let code = code.clone();
+        glib::idle_add_local_once(move || {
+            code.grab_focus();
+        });
     });
     page.upcast()
 }
